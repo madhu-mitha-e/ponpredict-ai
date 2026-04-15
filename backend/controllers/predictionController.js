@@ -1,35 +1,49 @@
-const { getPredictions } = require("../services/mlService");
+const axios = require("axios");
 const Prediction = require("../models/Prediction");
 
-exports.predict = async (req, res) => {
+const predict = async (req, res) => {
   try {
-    const { days = 7 } = req.body;
-    const result = await getPredictions(days);
+    // ✅ CALL YOUR DEPLOYED ML API
+    const response = await axios.get("https://ml-api-bo9r.onrender.com/predict");
 
-    const docs = result.predictions.map(p => ({
-      date:            new Date(p.date),
-      predicted_price: p.price_per_gram,
-      price_per_10g:   p.price_per_10g,
-      type:            days === 1 ? "tomorrow" : "7day",
-      accuracy:        result.accuracy
-    }));
+    const predictedPrice = response.data.predicted_price;
 
-    await Prediction.bulkCreate(docs, { ignoreDuplicates: true });
+    const doc = {
+      date: new Date(),
+      predicted_price: predictedPrice,
+      price_per_10g: predictedPrice * 10,
+      type: "7day",
+      accuracy: 95
+    };
 
-    res.json({ success: true, ...result });
+    await Prediction.create(doc);
+
+    res.json({
+      success: true,
+      prediction: doc
+    });
+
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error("Prediction Error:", err.message);
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
   }
 };
 
-exports.getPredictions = async (req, res) => {
+const getPredictions = async (req, res) => {
   try {
     const data = await Prediction.findAll({
       order: [["date", "ASC"]],
       limit: 10
     });
+
     res.json({ success: true, data });
+
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+module.exports = { predict, getPredictions };

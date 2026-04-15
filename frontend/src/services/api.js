@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const API = axios.create({ baseURL: "/api" });
+// ❗ TEMP LOCAL (for now)
+const BASE_URL = "http://localhost:5000/api";
 
-export const fetchLivePrice     = ()          => API.get("/live-price");
-export const fetchHistorical    = (days = 30) => API.get(`/historical-data?days=${days}`);
-export const fetchPredictions   = (days = 7)  => API.post("/predict", { days });
-export const fetchSavedPredicts = ()          => API.get("/predictions");
+export const fetchLivePrice = () => axios.get(`${BASE_URL}/live-price`);
+export const fetchHistorical = (days = 30) => axios.get(`${BASE_URL}/historical-data?days=${days}`);
+export const fetchPredictions = () => axios.get(`${BASE_URL}/predict`);

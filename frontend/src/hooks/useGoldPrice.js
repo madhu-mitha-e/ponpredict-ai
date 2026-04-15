@@ -28,13 +28,18 @@ export const useGoldPrice = () => {
     } catch (e) { console.error(e); }
   };
 
+  // 🔥 FINAL FIXED FUNCTION
   const loadPredictions = async () => {
-    try {
-      const { data } = await fetchPredictions(7);
-      setPredictions(data.predictions || []);
-      setAccuracy(data.accuracy);
-    } catch (e) { console.error(e); }
-  };
+  try {
+    const { data } = await fetchPredictions();
+
+    setPredictions([data.prediction]); // ✅ convert to array
+    setAccuracy(data.prediction.accuracy);
+
+  } catch (e) {
+    console.error(e);
+  }
+};
 
   useEffect(() => {
     const init = async () => {
@@ -43,6 +48,7 @@ export const useGoldPrice = () => {
       setLoading(false);
     };
     init();
+
     const interval = setInterval(loadLive, 60000);
     return () => clearInterval(interval);
   }, []);
